@@ -1,10 +1,54 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useContext } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { AuthContext } from "../Contexts/AuthProvider";
 
 const Login = () => {
+  const [userEmail, setUserEmail] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location?.state?.from?.pathname || "/";
+  const { signIn, resetPassword, signInWithGoogle } = useContext(AuthContext);
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log("Hello");
+    const email = event.target.email.value;
+    const password = event.target.password.value;
+    signIn(email, password)
+      .then((result) => {
+        console.log(result.user);
+        navigate(from, { replace: true });
+        toast.success("Successfully Sign In!");
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        toast.error(errorMessage);
+      });
   };
+
+  // Google Sign In
+  const handleGoogleSignIn = () => {
+    signInWithGoogle()
+      .then((result) => {
+        console.log(result.user);
+        navigate(from, { replace: true });
+      })
+      .catch((error) => toast.error(error.message));
+  };
+
+  // Forget Password
+
+  const handleResetPassword = () => {
+    resetPassword(userEmail)
+      .then(() => {
+        toast.success("Password reset email sent!");
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        toast.error(errorMessage);
+      });
+  };
+
   return (
     <div className="flex justify-center items-center pt-8">
       <div className="flex flex-col max-w-md p-6 rounded-md sm:p-10 bg-gray-100 text-gray-900">
@@ -26,6 +70,7 @@ const Login = () => {
                 Email address
               </label>
               <input
+                onBlur={(event) => setUserEmail(event.target.value)}
                 type="email"
                 name="email"
                 id="email"
@@ -60,7 +105,10 @@ const Login = () => {
           </div>
         </form>
         <div className="space-y-1">
-          <button className="text-xs hover:underline text-gray-400">
+          <button
+            onClick={handleResetPassword}
+            className="text-xs hover:underline text-gray-400"
+          >
             Forgot password?
           </button>
         </div>
@@ -72,7 +120,11 @@ const Login = () => {
           <div className="flex-1 h-px sm:w-16 dark:bg-gray-700"></div>
         </div>
         <div className="flex justify-center space-x-4">
-          <button aria-label="Log in with Google" className="p-3 rounded-sm">
+          <button
+            onClick={handleGoogleSignIn}
+            aria-label="Log in with Google"
+            className="p-3 rounded-sm"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 32 32"
