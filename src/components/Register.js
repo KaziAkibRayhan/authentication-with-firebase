@@ -1,20 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  updateProfile,
-  sendEmailVerification,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from "firebase/auth";
-import app from "../firebase/firebase.init";
 import { toast } from "react-toastify";
-
-const auth = getAuth(app);
+import { useContext } from "react";
+import { AuthContext } from "../Contexts/AuthProvider";
 
 const Register = () => {
-  const googleProvider = new GoogleAuthProvider();
+  const { createUser, updateName, verifyEmail, signInWithGoogle } =
+    useContext(AuthContext);
 
   // Sign Up using Email & Password
   const handleSubmit = (event) => {
@@ -24,23 +16,24 @@ const Register = () => {
     const password = event.target.password.value;
     console.log(name, email, password);
 
-    // create account
-    createUserWithEmailAndPassword(auth, email, password)
+    //1. create account
+    createUser(email, password)
       .then((result) => {
         console.log(result.user);
-        //Update Name
-        updateProfile(auth.currentUser, {
-          displayName: name,
-        })
+        //2. Update Name
+        updateName(name)
           .then(() => {
             toast.success("Name updated!");
-            // Email verification
-            sendEmailVerification(auth.currentUser).then(() => {
-              toast.success(
-                "Email verification sent! Please check your email."
-              );
-              console.log(auth.currentUser);
-            });
+            //3. Email verification
+            verifyEmail()
+              .then(() => {
+                toast.success(
+                  "Email verification sent! Please check your email."
+                );
+              })
+              .catch((error) => {
+                toast.error(error.message);
+              });
           })
           .catch((error) => {
             toast.error(error.message);
@@ -53,7 +46,7 @@ const Register = () => {
 
   // Google Sign In
   const handleGoogleSignIn = () => {
-    signInWithPopup(auth, googleProvider)
+    signInWithGoogle()
       .then((result) => {
         console.log(result.user);
       })
