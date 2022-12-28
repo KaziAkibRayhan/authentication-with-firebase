@@ -1,6 +1,6 @@
 import React from 'react'
 
-import avatarImg from '../assets/avatar.jpeg'
+import avatarImg from '../assets/avatar.jpg'
 
 const Profile = () => {
   const user = {}
